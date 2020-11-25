@@ -1,6 +1,6 @@
 from typing import Optional, List
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from pydantic import BaseModel
 
 
@@ -13,5 +13,6 @@ app = FastAPI()
 
 
 @app.post("/")
-async def create_item(item: Item):
-    return item
+async def create_item(data: Item):
+    if data.object == "page":
+        return Response(content = "OK")
