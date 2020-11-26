@@ -8,21 +8,26 @@ import httpx
 
 class Item(BaseModel):
     """to build a Item which will receive data from fb json"""
+
     object: str = ""
     entry: List = []
 
+
 VERIFY_TOKEN = "zawarudo"
-ACCESS_TOKEN = 'EAAEYLiZBkkycBAJMCGDhIxTtyNkh8dQeWD4J4bPZBCgkOho4NVy\
+ACCESS_TOKEN = "EAAEYLiZBkkycBAJMCGDhIxTtyNkh8dQeWD4J4bPZBCgkOho4NVy\
                 AvwpJuVaTTHdWEaWM7cTZBXvWIIsDhT71mDBAT0qZBVwbyRpMbLERcbLeEwxfHLuTDR0F\
-                vQ6ZAdvBmwJOQre7aMTopZAoBjODyxB4AGKi5Cn2TZCwoLwJNcL4gZDZD'
+                vQ6ZAdvBmwJOQre7aMTopZAoBjODyxB4AGKi5Cn2TZCwoLwJNcL4gZDZD"
+
 
 class SendMessage:
     """using httpx to post data back to fb bot"""
-    def __init__(self,
+
+    def __init__(
+        self,
         recipient_id: str,
         message_text: str,
-        #access_token: str = ACCESS_TOKEN,
-        #message_type: str = "UPDATE",
+        # access_token: str = ACCESS_TOKEN,
+        # message_type: str = "UPDATE",
     ):
         r = httpx.post(
             "https://graph.facebook.com/v2.6/me/messages",
@@ -36,15 +41,17 @@ class SendMessage:
         )
         r.raise_for_status()
 
+
 app = FastAPI()
 
 
 @app.get("/")
-async def verify(request : Request):
+async def verify(request: Request):
     """use to verify all the info and make sure is the one we need to reply with"""
     if request.query_params.get("hub.mode") == "subscribe" and request.query_params.get(
-        "hub.challenge"):
-        if (not request.query_params.get("hub.verify_token") == "zawarudo"):
+        "hub.challenge"
+    ):
+        if not request.query_params.get("hub.verify_token") == "zawarudo":
             return Response(content="Verification token mismatch", status_code=403)
         return Response(content=request.query_params["hub.challenge"])
     return Response(content="Required arguments haven't passed.", status_code=400)
@@ -62,8 +69,9 @@ async def create_item(data: Item):
                 message = event.get("message")
                 sender_id = event["sender"]["id"]
                 for field in message:
-                    if "text" in field :
-                        return SendMessage(recipient_id=sender_id, message_text=message['text'])
+                    if "text" in field:
+                        return SendMessage(
+                            recipient_id=sender_id, message_text=message["text"]
+                        )
                 return SendMessage(recipient_id=sender_id, message_text="not support")
-    return Response(content = "content received", status_code = 200)
-    
+    return Response(content="content received", status_code=200)
