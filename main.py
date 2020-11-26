@@ -11,8 +11,8 @@ class Item(BaseModel):
 VERIFY_TOKEN = "zawarudo"
 ACCESS_TOKEN = 'EAAEYLiZBkkycBAJMCGDhIxTtyNkh8dQeWD4J4bPZBCgkOho4NVyAvwpJuVaTTHdWEaWM7cTZBXvWIIsDhT71mDBAT0qZBVwbyRpMbLERcbLeEwxfHLuTDR0FvQ6ZAdvBmwJOQre7aMTopZAoBjODyxB4AGKi5Cn2TZCwoLwJNcL4gZDZD'
 
-class Send:
-    def message(self,
+class Send_message:
+    def __init__(self,
         recipient_id: str,
         message_text: str,
         access_token: str = ACCESS_TOKEN,
@@ -54,9 +54,10 @@ def create_item(data: Item):
             for event in messaging_events:
                 message = event.get("message")
                 sender_id = event["sender"]["id"]
-                if message['message'].get('text'):
-                	return Send().message(recipient_id=sender_id, message_text=message['text'])
+                if event["message"]["text"]:
+                	return Send_message(recipient_id=sender_id, message_text=message['text'])
                 else:
-                	return Send().message(recipient_id=sender_id, message_text="not support")
+                	return Send_message(recipient_id=sender_id, message_text="not support")
+
     return Response(content = "content received", status_code = 200)
 
