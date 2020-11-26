@@ -1,22 +1,28 @@
-from typing import Optional, List
+"""perform a messenger bot to reply text or non text"""
+
+from typing import List
 from fastapi import FastAPI, Response, Request
 from pydantic import BaseModel
 import httpx
 
 
 class Item(BaseModel):
+    """to build a Item which will receive data from fb json"""
     object: str = ""
     entry: List = []
 
 VERIFY_TOKEN = "zawarudo"
-ACCESS_TOKEN = 'EAAEYLiZBkkycBAJMCGDhIxTtyNkh8dQeWD4J4bPZBCgkOho4NVyAvwpJuVaTTHdWEaWM7cTZBXvWIIsDhT71mDBAT0qZBVwbyRpMbLERcbLeEwxfHLuTDR0FvQ6ZAdvBmwJOQre7aMTopZAoBjODyxB4AGKi5Cn2TZCwoLwJNcL4gZDZD'
+ACCESS_TOKEN = 'EAAEYLiZBkkycBAJMCGDhIxTtyNkh8dQeWD4J4bPZBCgkOho4NVy\
+                AvwpJuVaTTHdWEaWM7cTZBXvWIIsDhT71mDBAT0qZBVwbyRpMbLERcbLeEwxfHLuTDR0F\
+                vQ6ZAdvBmwJOQre7aMTopZAoBjODyxB4AGKi5Cn2TZCwoLwJNcL4gZDZD'
 
-class Send_message:
+class SendMessage:
+    """using httpx to post data back to fb bot"""
     def __init__(self,
         recipient_id: str,
         message_text: str,
-        access_token: str = ACCESS_TOKEN,
-        message_type: str = "UPDATE",
+        #access_token: str = ACCESS_TOKEN,
+        #message_type: str = "UPDATE",
     ):
         r = httpx.post(
             "https://graph.facebook.com/v2.6/me/messages",
@@ -30,11 +36,12 @@ class Send_message:
         )
         r.raise_for_status()
 
-
 app = FastAPI()
+
 
 @app.get("/")
 async def verify(request : Request):
+    """use to verify all the info and make sure is the one we need to reply with"""
     if request.query_params.get("hub.mode") == "subscribe" and request.query_params.get(
         "hub.challenge"):
         if (not request.query_params.get("hub.verify_token") == "zawarudo"):
@@ -43,9 +50,9 @@ async def verify(request : Request):
     return Response(content="Required arguments haven't passed.", status_code=400)
 
 
-
 @app.post("/")
-def create_item(data: Item):
+async def create_item(data: Item):
+    """decrypt the json file and find what contains, finally send reply back"""
     if data.object == "page":
         for entry in data.entry:
             messaging_events = [
@@ -54,10 +61,9 @@ def create_item(data: Item):
             for event in messaging_events:
                 message = event.get("message")
                 sender_id = event["sender"]["id"]
-                if event["message"]["text"]:
-                	return Send_message(recipient_id=sender_id, message_text=message['text'])
-                else:
-                	return Send_message(recipient_id=sender_id, message_text="not support")
-
+                for field in message:
+                    if "text" in field :
+                        return SendMessage(recipient_id=sender_id, message_text=message['text'])
+                return SendMessage(recipient_id=sender_id, message_text="not support")
     return Response(content = "content received", status_code = 200)
-
+    
