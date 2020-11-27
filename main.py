@@ -42,6 +42,13 @@ class SendMessage:
         r.raise_for_status()
 
 
+class NotSupport(SendMessage):
+    """using this inherit class if message receive is not support"""
+
+    def __init__(self, recipient_id):
+        super().__init__(recipient_id, message_text="Not Support")
+
+
 app = FastAPI()
 
 
@@ -73,5 +80,5 @@ async def create_item(data: Item):
                         return SendMessage(
                             recipient_id=sender_id, message_text=message["text"]
                         )
-                return SendMessage(recipient_id=sender_id, message_text="not support")
+                return NotSupport(recipient_id=sender_id)
     return Response(content="content received", status_code=200)
