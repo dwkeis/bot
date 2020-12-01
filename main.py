@@ -10,7 +10,7 @@ class Item(BaseModel):
     """to build a Item which will receive data from fb json"""
 
     object: str = ""
-    entry: List = []
+    entry: List = [{}]
 
 
 VERIFY_TOKEN = "zawarudo"
@@ -80,5 +80,8 @@ async def create_item(data: Item):
                         return SendMessage(
                             recipient_id=sender_id, message_text=message["text"]
                         )
-                return NotSupport(recipient_id=sender_id)
+                    if "attachment" in field:
+                        return SendMessage(
+                            recipient_id=sender_id, message_text="Attachment Found."
+                        )
     return Response(content="content received", status_code=200)
